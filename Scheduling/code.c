@@ -39,8 +39,14 @@ void fcfs(Job jobs[], int num_jobs) {
 
 void sjf(Job jobs[], int num_jobs) {
   int current_time = 0;
-  int wait_time = 0;  // Declare wait_time here
-  int turnaround_time = 0;  // Declare turnaround_time here
+  int wait_time = 0;
+  int turnaround_time = 0;
+  
+  int preemptive_choice;
+  printf("Do you want to use preemptive SJF? (1 for Yes, 0 for No): ");
+  scanf("%d", &preemptive_choice);
+  preemptive = preemptive_choice;
+
   while (1) {
     int shortest_job = -1;
     for (int j = 0; j < num_jobs; j++) {
@@ -59,7 +65,7 @@ void sjf(Job jobs[], int num_jobs) {
     turnaround_time += current_time - jobs[shortest_job].arrival_time + jobs[shortest_job].burst_time;
     current_time += jobs[shortest_job].burst_time;
     jobs[shortest_job].burst_time = 0;
-    if (preemptive) {
+    if (!preemptive) {
       break;
     }
   }
@@ -133,7 +139,7 @@ int main(int argc, char **argv) {
   int opt;
   char *input_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\input.txt";
   char *output_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\output.txt";
-   int algorithm_choice = -1;
+   int algorithm_choice;
   while ((opt = getopt(argc, argv, "f:o:p")) != -1) {
     switch (opt) {
       case 'f':
