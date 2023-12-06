@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "../../Documents"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "CPU_Scheduling"
+		}
+	],
+	"settings": {
+		"terminal.integrated.defaultProfile.windows": null,
+		"terminal.integrated.defaultProfile.osx": "",
+		
+	}
+}
