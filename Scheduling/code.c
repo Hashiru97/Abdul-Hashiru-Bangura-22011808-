@@ -68,6 +68,66 @@ void sjf(Job jobs[], int num_jobs) {
 }
 
 // (similar changes for priority and round_robin functions)
+void priority(Job jobs[], int num_jobs) {
+  int current_time = 0;
+  int wait_time = 0;
+  int turnaround_time = 0;
+  while (1) {
+    int highest_priority_job = -1;
+    for (int j = 0; j < num_jobs; j++) {
+      if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
+        if (highest_priority_job == -1 || jobs[j].priority > jobs[highest_priority_job].priority) {
+          highest_priority_job = j;
+        }
+      }
+    }
+    if (highest_priority_job == -1) {
+      current_time++;
+      continue;
+    }
+    printf("Processing job %d\n", highest_priority_job + 1);
+    wait_time += current_time - jobs[highest_priority_job].arrival_time;
+    turnaround_time += current_time - jobs[highest_priority_job].arrival_time + jobs[highest_priority_job].burst_time;
+    current_time += jobs[highest_priority_job].burst_time;
+    jobs[highest_priority_job].burst_time = 0;
+    if (preemptive) {
+      break;
+    }
+  }
+  printf("Average wait time: %f\n", (double)wait_time / num_jobs);
+  printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
+}
+
+void round_robin(Job jobs[], int num_jobs, int time_slice) {
+  int current_time = 0;
+  int wait_time = 0;
+  int turnaround_time = 0;
+  int jobs_completed = 0;
+  while (jobs_completed < num_jobs) {
+    int job_to_process = -1;
+    for (int j = 0; j < num_jobs; j++) {
+      if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
+        job_to_process = j;
+        break;
+      }
+    }
+    if (job_to_process == -1) {
+      current_time++;
+      continue;
+    }
+    printf("Processing job %d\n", job_to_process + 1);
+    wait_time += current_time - jobs[job_to_process].arrival_time;
+    turnaround_time += current_time - jobs[job_to_process].arrival_time + jobs[job_to_process].burst_time;
+    current_time += time_slice;
+    jobs[job_to_process].burst_time -= time_slice;
+    if (jobs[job_to_process].burst_time <= 0) {
+      jobs_completed++;
+    }
+  }
+  printf("Average wait time: %f\n", (double)wait_time / num_jobs);
+  printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
+}
+
 
 int main(int argc, char **argv) {
   int opt;
@@ -142,7 +202,7 @@ int main(int argc, char **argv) {
             round_robin(jobs, num_jobs, 2);
             break;
         default:
-            fprintf(stderr, "Invalid choice. Exiting...\n");
+            fpr2intf(stderr, "Invalid choice. Exiting...\n");
             exit(EXIT_FAILURE);
     }
 
