@@ -202,7 +202,7 @@ int main(int argc, char **argv) {
             round_robin(jobs, num_jobs, 2);
             break;
         default:
-            fpr2intf(stderr, "Invalid choice. Exiting...\n");
+            fprintf(stderr, "Invalid choice. Exiting...\n");
             exit(EXIT_FAILURE);
     }
 
