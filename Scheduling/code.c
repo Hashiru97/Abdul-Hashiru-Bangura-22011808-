@@ -39,15 +39,14 @@ void fcfs(Job jobs[], int num_jobs) {
 
 void sjf(Job jobs[], int num_jobs) {
   int current_time = 0;
-  int wait_time = 0;
-  int turnaround_time = 0;
-  
   int preemptive_choice;
   printf("Do you want to use preemptive SJF? (1 for Yes, 0 for No): ");
   scanf("%d", &preemptive_choice);
   preemptive = preemptive_choice;
 
   while (1) {
+  int wait_time = 0;
+  int turnaround_time = 0;
     int shortest_job = -1;
     for (int j = 0; j < num_jobs; j++) {
       if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
@@ -68,9 +67,11 @@ void sjf(Job jobs[], int num_jobs) {
     if (!preemptive) {
       break;
     }
-  }
+  
+  
   printf("Average wait time: %f\n", (double)wait_time / num_jobs);
   printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
+  }
 }
 
 // (similar changes for priority and round_robin functions)
