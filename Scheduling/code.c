@@ -71,8 +71,9 @@ void sjf(Job jobs[], int num_jobs) {
 
 int main(int argc, char **argv) {
   int opt;
-  char *input_file_name = NULL;
-  char *output_file_name = NULL;
+  char *input_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\input.txt";
+  char *output_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\output.txt";
+   int algorithm_choice = -1;
   while ((opt = getopt(argc, argv, "f:o:p")) != -1) {
     switch (opt) {
       case 'f':
@@ -105,6 +106,15 @@ int main(int argc, char **argv) {
   int num_jobs = read_jobs(input_file, jobs);
   fclose(input_file);
 
+  printf("Select Scheduling Algorithm:\n");
+    printf("1. First-Come First-Serve\n");
+    printf("2. Shortest Job First\n");
+    printf("3. Priority Scheduling\n");
+    printf("4. Round Robin\n");
+
+    printf("Enter the number corresponding to your choice: ");
+    scanf("%d", &algorithm_choice);
+
   FILE *output_file = NULL;
   if (output_file_name != NULL) {
     output_file = fopen(output_file_name, "w");
@@ -114,9 +124,27 @@ int main(int argc, char **argv) {
     }
   }
 
-  printf("First-Come First-Serve:\n");
-  fcfs(jobs, num_jobs);
-  // (similar changes for other scheduling functions)
+  switch (algorithm_choice) {
+        case 1:
+            printf("\nFirst-Come First-Serve:\n");
+            fcfs(jobs, num_jobs);
+            break;
+        case 2:
+            printf("\nShortest Job First:\n");
+            sjf(jobs, num_jobs);
+            break;
+        case 3:
+            printf("\nPriority Scheduling:\n");
+            priority(jobs, num_jobs);
+            break;
+        case 4:
+            printf("\nRound Robin (time slice = 2):\n");
+            round_robin(jobs, num_jobs, 2);
+            break;
+        default:
+            fprintf(stderr, "Invalid choice. Exiting...\n");
+            exit(EXIT_FAILURE);
+    }
 
   if (output_file != NULL) {
     fclose(output_file);
