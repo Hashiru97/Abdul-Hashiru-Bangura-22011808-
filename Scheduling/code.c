@@ -40,13 +40,14 @@ void fcfs(Job jobs[], int num_jobs) {
 void sjf(Job jobs[], int num_jobs) {
   int current_time = 0;
   int preemptive_choice;
+   int wait_time = 0;
+  int turnaround_time = 0;
   printf("Do you want to use preemptive SJF? (1 for Yes, 0 for No): ");
   scanf("%d", &preemptive_choice);
   preemptive = preemptive_choice;
 
   while (1) {
-  int wait_time = 0;
-  int turnaround_time = 0;
+ 
     int shortest_job = -1;
     for (int j = 0; j < num_jobs; j++) {
       if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
@@ -68,41 +69,58 @@ void sjf(Job jobs[], int num_jobs) {
       break;
     }
   
-  
+  }
   printf("Average wait time: %f\n", (double)wait_time / num_jobs);
   printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
-  }
+  
 }
 
 // (similar changes for priority and round_robin functions)
 void priority(Job jobs[], int num_jobs) {
   int current_time = 0;
-  int wait_time = 0;
-  int turnaround_time = 0;
+ int wait_time = 0;
+    int turnaround_time = 0;
   while (1) {
+    
     int highest_priority_job = -1;
-    for (int j = 0; j < num_jobs; j++) {
-      if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
-        if (highest_priority_job == -1 || jobs[j].priority > jobs[highest_priority_job].priority) {
-          highest_priority_job = j;
+    for (int j = 0; j < num_jobs; j++)  {
+        if (jobs[j].burst_time > 0) {
+            if (highest_priority_job == -1 ||
+                jobs[j].priority < jobs[highest_priority_job].priority ||
+                (jobs[j].priority == jobs[highest_priority_job].priority && jobs[j].arrival_time < jobs[highest_priority_job].arrival_time)) {
+                highest_priority_job = j;
+            }
         }
-      }
     }
     if (highest_priority_job == -1) {
-      current_time++;
-      continue;
+        // All jobs are completed
+        break;
     }
+    
     printf("Processing job %d\n", highest_priority_job + 1);
     wait_time += current_time - jobs[highest_priority_job].arrival_time;
     turnaround_time += current_time - jobs[highest_priority_job].arrival_time + jobs[highest_priority_job].burst_time;
     current_time += jobs[highest_priority_job].burst_time;
     jobs[highest_priority_job].burst_time = 0;
     if (preemptive) {
+      continue;
+    }
+     int all_jobs_completed = 1;
+    for (int j = 0; j < num_jobs; j++) {
+      if (jobs[j].burst_time > 0) {
+        all_jobs_completed = 0;
+        break;
+      }
+    }
+
+    if (all_jobs_completed) {
       break;
     }
+   
   }
   printf("Average wait time: %f\n", (double)wait_time / num_jobs);
   printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
+  
 }
 
 void round_robin(Job jobs[], int num_jobs, int time_slice) {
