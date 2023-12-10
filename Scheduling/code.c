@@ -8,7 +8,7 @@ int preemptive = 0;
 
 typedef struct {
   int arrival_time;
-  int burst_time;  // Replace processing_time with burst_time
+  int burst_time;  
   int priority;
 } Job;
 
@@ -22,8 +22,8 @@ int read_jobs(FILE *input_file, Job jobs[]) {
 
 void fcfs(Job jobs[], int num_jobs) {
   int current_time = 0;
-  int wait_time = 0;  // Declare wait_time here
-  int turnaround_time = 0;  // Declare turnaround_time here
+  int wait_time = 0;  
+  int turnaround_time = 0;  
   for (int i = 0; i < num_jobs; i++) {
     printf("Processing job %d\n", i + 1);
     if (current_time < jobs[i].arrival_time) {
@@ -38,44 +38,50 @@ void fcfs(Job jobs[], int num_jobs) {
 }
 
 void sjf(Job jobs[], int num_jobs) {
-  int current_time = 0;
-  int preemptive_choice;
-   int wait_time = 0;
-  int turnaround_time = 0;
-  printf("Do you want to use preemptive SJF? (1 for Yes, 0 for No): ");
-  scanf("%d", &preemptive_choice);
-  preemptive = preemptive_choice;
+    int current_time = 0;
+    int total_wait_time = 0;
+    int total_turnaround_time = 0;
+    int preemptive_choice;
 
-  while (1) {
- 
-    int shortest_job = -1;
-    for (int j = 0; j < num_jobs; j++) {
-      if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
-        if (shortest_job == -1 || jobs[j].burst_time < jobs[shortest_job].burst_time) {
-          shortest_job = j;
+    printf("Do you want to use preemptive SJF? (1 for Yes, 0 for No): ");
+    scanf("%d", &preemptive_choice);
+
+    while (1) {
+        int shortest_job = -1;
+        for (int j = 0; j < num_jobs; j++) {
+            if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
+                if (shortest_job == -1 || jobs[j].burst_time < jobs[shortest_job].burst_time) {
+                  if(shortest_job == -1 || jobs[j].burst_time)
+                    shortest_job = j;
+                }
+              
+            }
+            
         }
-      }
+
+        if (shortest_job == -1) {
+            break;
+        }
+
+        printf("Processing job %d\n", shortest_job + 1);
+        total_wait_time += current_time - jobs[shortest_job].arrival_time;
+        total_turnaround_time += current_time - jobs[shortest_job].arrival_time + jobs[shortest_job].burst_time;
+
+        if (preemptive_choice) {
+           
+            current_time++;
+            jobs[shortest_job].burst_time--;
+        } else {
+            
+            current_time += jobs[shortest_job].burst_time;
+            jobs[shortest_job].burst_time = 0;
+        }
     }
-    if (shortest_job == -1) {
-      current_time++;
-      continue;
-    }
-    printf("Processing job %d\n", shortest_job + 1);
-    wait_time += current_time - jobs[shortest_job].arrival_time;
-    turnaround_time += current_time - jobs[shortest_job].arrival_time + jobs[shortest_job].burst_time;
-    current_time += jobs[shortest_job].burst_time;
-    jobs[shortest_job].burst_time = 0;
-    if (!preemptive) {
-      break;
-    }
-  
-  }
-  printf("Average wait time: %f\n", (double)wait_time / num_jobs);
-  printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
-  
+
+    printf("Total Average wait time: %f\n", (double)total_wait_time / num_jobs);
+    printf("Total Average turnaround time: %f\n", (double)total_turnaround_time / num_jobs);
 }
 
-// (similar changes for priority and round_robin functions)
 void priority(Job jobs[], int num_jobs) {
   int current_time = 0;
  int wait_time = 0;
@@ -93,7 +99,6 @@ void priority(Job jobs[], int num_jobs) {
         }
     }
     if (highest_priority_job == -1) {
-        // All jobs are completed
         break;
     }
     
@@ -124,33 +129,33 @@ void priority(Job jobs[], int num_jobs) {
 }
 
 void round_robin(Job jobs[], int num_jobs, int time_slice) {
-  int current_time = 0;
-  int wait_time = 0;
-  int turnaround_time = 0;
-  int jobs_completed = 0;
-  while (jobs_completed < num_jobs) {
-    int job_to_process = -1;
-    for (int j = 0; j < num_jobs; j++) {
-      if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
-        job_to_process = j;
-        break;
-      }
+    int current_time = 0;
+    int wait_time = 0;
+    int turnaround_time = 0;
+    int jobs_completed = 0;
+
+    while (jobs_completed < num_jobs) {
+        for (int j = 0; j < num_jobs; j++) {
+            if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
+                printf("Processing job %d\n", j + 1);
+                wait_time += current_time - jobs[j].arrival_time;
+
+                if (jobs[j].burst_time <= time_slice) {
+                    turnaround_time += current_time - jobs[j].arrival_time + jobs[j].burst_time;
+                    current_time += jobs[j].burst_time;
+                    jobs[j].burst_time = 0;
+                    jobs_completed++;
+                } else {
+                    turnaround_time += current_time - jobs[j].arrival_time + time_slice;
+                    current_time += time_slice;
+                    jobs[j].burst_time -= time_slice;
+                }
+            }
+        }
     }
-    if (job_to_process == -1) {
-      current_time++;
-      continue;
-    }
-    printf("Processing job %d\n", job_to_process + 1);
-    wait_time += current_time - jobs[job_to_process].arrival_time;
-    turnaround_time += current_time - jobs[job_to_process].arrival_time + jobs[job_to_process].burst_time;
-    current_time += time_slice;
-    jobs[job_to_process].burst_time -= time_slice;
-    if (jobs[job_to_process].burst_time <= 0) {
-      jobs_completed++;
-    }
-  }
-  printf("Average wait time: %f\n", (double)wait_time / num_jobs);
-  printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
+
+    printf("Average wait time: %f\n", (double)wait_time / num_jobs);
+    printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
 }
 
 
