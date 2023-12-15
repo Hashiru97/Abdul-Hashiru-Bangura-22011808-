@@ -21,6 +21,7 @@ int read_jobs(FILE *input_file, Job jobs[]) {
 }
 
 void fcfs(Job jobs[], int num_jobs) {
+   FILE *output_file = freopen("output.txt", "a", stdout);
   int current_time = 0;
   int wait_time = 0;  
   int turnaround_time = 0;  
@@ -32,12 +33,15 @@ void fcfs(Job jobs[], int num_jobs) {
     wait_time += current_time - jobs[i].arrival_time;
     turnaround_time += current_time - jobs[i].arrival_time + jobs[i].burst_time;
     current_time += jobs[i].burst_time;
+
   }
   printf("Average wait time: %f\n", (double)wait_time / num_jobs);
   printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
+  fclose(output_file);
 }
 
 void sjf(Job jobs[], int num_jobs) {
+ 
     int current_time = 0;
     int total_wait_time = 0;
     int total_turnaround_time = 0;
@@ -45,7 +49,7 @@ void sjf(Job jobs[], int num_jobs) {
 
     printf("Do you want to use preemptive SJF? (1 for Yes, 0 for No): ");
     scanf("%d", &preemptive_choice);
-
+      FILE *output_file = freopen("output.txt", "a", stdout);
     while (1) {
         int shortest_job = -1;
         for (int j = 0; j < num_jobs; j++) {
@@ -80,9 +84,12 @@ void sjf(Job jobs[], int num_jobs) {
 
     printf("Total Average wait time: %f\n", (double)total_wait_time / num_jobs);
     printf("Total Average turnaround time: %f\n", (double)total_turnaround_time / num_jobs);
+
+     fclose(output_file);
 }
 
 void priority(Job jobs[], int num_jobs) {
+  FILE *output_file = freopen("output.txt", "a", stdout);
   int current_time = 0;
  int wait_time = 0;
     int turnaround_time = 0;
@@ -125,10 +132,13 @@ void priority(Job jobs[], int num_jobs) {
   }
   printf("Average wait time: %f\n", (double)wait_time / num_jobs);
   printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
+
+   fclose(output_file);
   
 }
 
 void round_robin(Job jobs[], int num_jobs, int time_slice) {
+  FILE *output_file = freopen("output.txt", "a", stdout);
     int current_time = 0;
     int wait_time = 0;
     int turnaround_time = 0;
@@ -156,14 +166,26 @@ void round_robin(Job jobs[], int num_jobs, int time_slice) {
 
     printf("Average wait time: %f\n", (double)wait_time / num_jobs);
     printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
+     fclose(output_file);
 }
 
+int choice;
+void print_menu(choice) {
+    printf("\nCPU Scheduler Simulator\n");
+    printf("1) Scheduling Method (None)\n");
+    printf("2) Preemptive Mode (Off)\n");
+    printf("3) Show Result\n");
+    printf("4) End Program\n");
+    printf("Option > ");
+}
 
 int main(int argc, char **argv) {
   int opt;
-  char *input_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\input.txt";
-  char *output_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\output.txt";
+  char *input_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\School work\\Projects\\project OS\\Scheduling\\input.txt";
+  char *output_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\School work\\Projects\\project OS\\Scheduling\\output.txt";
    int algorithm_choice;
+    int scheduling_method = 0; // 0: None, 1: FCFS, 2: SJF, 3: Priority, 4: Round Robin
+     int preemptive_mode = 0; // 0: Off, 1: On
   while ((opt = getopt(argc, argv, "f:o:p")) != -1) {
     switch (opt) {
       case 'f':
@@ -196,7 +218,7 @@ int main(int argc, char **argv) {
   int num_jobs = read_jobs(input_file, jobs);
   fclose(input_file);
 
-  printf("Select Scheduling Algorithm:\n");
+  printf("\t\t\t\t\t\t CPU Scheduler Simulator:\n");
     printf("1. First-Come First-Serve\n");
     printf("2. Shortest Job First\n");
     printf("3. Priority Scheduling\n");
