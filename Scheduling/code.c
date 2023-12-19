@@ -8,7 +8,8 @@ int preemptive = 0;
 
 typedef struct {
   int arrival_time;
-  int burst_time;  
+  int burst_time;
+  int original_burst_time;   
   int priority;
 } Job;
 
@@ -90,6 +91,7 @@ void sjf(Job jobs[], int num_jobs) {
     fprintf(output_file, "Total Average turnaround time: %f\n", (double)total_turnaround_time / num_jobs);
 
      fclose(output_file);
+     
 }
 
 void priority(Job jobs[], int num_jobs) {
@@ -141,6 +143,7 @@ void priority(Job jobs[], int num_jobs) {
 
    fclose(output_file);
   
+  
 }
 
 void round_robin(Job jobs[], int num_jobs, int time_slice) {
@@ -175,13 +178,29 @@ void round_robin(Job jobs[], int num_jobs, int time_slice) {
     printf("Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
     fprintf(output_file, "Average turnaround time: %f\n", (double)turnaround_time / num_jobs);
      fclose(output_file);
+     
+}
+void reset_jobs(Job jobs[], int num_jobs) {
+    for (int i = 0; i < num_jobs; i++) {
+        jobs[i].burst_time = jobs[i].original_burst_time;
+    }
 }
 
+void print_menu() {
+    printf("CPU Scheduler Simulator\n");
+    printf("1) Scheduling Method (None)\n");
+    printf("2) Preemptive Mode (Off)\n");
+    printf("3) Show Result\n");
+    printf("4) End Program\n");
+    printf("Option > ");
+}
 int main(int argc, char **argv) {
   int opt;
   char *input_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\School work\\Projects\\project OS\\Scheduling\\input.txt";
   char *output_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\School work\\Projects\\project OS\\Scheduling\\output.txt";
-   int algorithm_choice;
+  int algorithm_choice;
+  int scheduling_method = 0;  // 0: None, 1: FCFS, 2: SJF, 3: Priority, 4: Round Robin
+  int preemptive_choice = 0; // 0: Off, 1: On
 
   while ((opt = getopt(argc, argv, "f:o:p")) != -1) {
     switch (opt) {
@@ -192,7 +211,7 @@ int main(int argc, char **argv) {
         output_file_name = optarg;
         break;
       case 'p':
-        preemptive = 1;
+        preemptive = 1 - preemptive_choice;
         break;
       default:
         fprintf(stderr, "Usage: %s [-f input_file] [-o output_file] [-p]\n", argv[0]);
@@ -215,16 +234,17 @@ int main(int argc, char **argv) {
   int num_jobs = read_jobs(input_file, jobs);
   fclose(input_file);
 
-  printf("\t\t\t\t\t\t CPU Scheduler Simulator:\n");
-    printf("1. First-Come First-Serve\n");
-    printf("2. Shortest Job First\n");
-    printf("3. Priority Scheduling\n");
-    printf("4. Round Robin\n");
+  while (1) {
+    printf("\t\t\t\t\t\t CPU Scheduler Simulator:\n");
+    printf("1. Scheduling Method (None)\n");
+    printf("2. Preemptive Mode (Off)\n");
+    printf("3. Show Result\n");
+    printf("4. End Program\n");
+    printf("Option > ");
 
-    printf("Enter the number corresponding to your choice: ");
     scanf("%d", &algorithm_choice);
 
-  FILE *output_file = NULL;
+     FILE *output_file = NULL;
   if (output_file_name != NULL) {
     output_file = fopen(output_file_name, "a");
     if (output_file == NULL) {
@@ -232,31 +252,76 @@ int main(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
   }
+    
 
-  switch (algorithm_choice) {
-        case 1:
+    switch (algorithm_choice) {
+      case 1:
+        printf("\nChoose Scheduling Method:\n");
+        printf("1. FCFS\n");
+        printf("2. SJF\n");
+        printf("3. Priority\n");
+        printf("4. Round Robin\n");
+        printf("0. None\n");
+        printf("Enter the number corresponding to your choice: ");
+        scanf("%d", &scheduling_method);
+        break;
+      case 2:
+        printf("\nPreemptive Mode:\n");
+        printf("0. Off\n");
+        printf("1. On\n");
+        printf("Enter the number corresponding to your choice: ");
+        scanf("%d", &preemptive_choice);
+        break;
+      case 3:
+         output_file = fopen(output_file_name, "a");
+      if (output_file == NULL) {
+        fprintf(stderr, "Error: Could not open output file %s.\n", output_file_name);
+        exit(EXIT_FAILURE);
+      }
+        printf("\nShow Result:\n");
+        // Call the appropriate scheduling function based on scheduling_method and preemptive_choice
+        switch (scheduling_method) {
+          
+          case 1:
             printf("\nFirst-Come First-Serve:\n");
+            fprintf(output_file, "\nFirst-Come First-Serve:\n");
             fcfs(jobs, num_jobs);
             break;
-        case 2:
+          case 2:
             printf("\nShortest Job First:\n");
+             fprintf(output_file, "\nShortest Job First:\n");
             sjf(jobs, num_jobs);
             break;
-        case 3:
+            
+          case 3:
             printf("\nPriority Scheduling:\n");
+            fprintf(output_file, "\nPriority Scheduling:\n");
             priority(jobs, num_jobs);
             break;
-        case 4:
+           
+          case 4:
             printf("\nRound Robin (time slice = 2):\n");
+             fprintf(output_file, "\nRound Robin (time slice = 2):\n");
             round_robin(jobs, num_jobs, 2);
             break;
-        default:
-            fprintf(stderr, "Invalid choice. Exiting...\n");
-            exit(EXIT_FAILURE);
+            reset_jobs(jobs, num_jobs);
+          default:
+            printf("\nNo Scheduling Method Selected.\n");
+        }
+         fclose(output_file);
+        break;
+      case 4:
+        printf("\nEnd Program.\n");
+        // Close the output file if it's open
+        if (output_file != NULL) {
+          fclose(output_file);
+        }
+        exit(EXIT_SUCCESS);
+      default:
+        printf("\nInvalid choice. Please enter a valid option.\n");
+        
     }
-
-  if (output_file != NULL) {
-    fclose(output_file);
+    
   }
 
   return 0;
