@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
   }
-
+ while (1) {
   FILE *input_file = fopen(input_file_name, "r");
   if (input_file == NULL) {
     fprintf(stderr, "Error: Could not open input file %s.\n", input_file_name);
@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
   int num_jobs = read_jobs(input_file, jobs);
   fclose(input_file);
 
-  while (1) {
+ 
     printf("\t\t\t\t\t\t CPU Scheduler Simulator:\n");
     printf("1. Scheduling Method (None)\n");
     printf("2. Preemptive Mode (Off)\n");
