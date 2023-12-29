@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
+#include <math.h>
 #define MAX_JOBS 100
 
 typedef struct {
@@ -10,6 +10,7 @@ typedef struct {
   int original_burst_time;
   int priority;
    int preempted;
+   int last_exit_time;
 } Job;
 
 int preemptive = 0;
@@ -56,147 +57,153 @@ void fcfs(Job jobs[], int num_jobs, FILE *output_file) {
 }
 
 void sjf(Job jobs[], int num_jobs, FILE *output_file) {
-  int current_time = 0;
-  int total_wait_time = 0;
-  int jobs_finished = 0; 
-  
-  int preemptive_choice;
+    int current_time = 0;
+    int total_wait_time = 0;
+    int jobs_finished = 0;
 
-  printf("Do you want to use preemptive SJF? (1 for Yes, 0 for No): ");
-  scanf("%d", &preemptive_choice);
+    int preemptive_choice;
 
-  printf("Scheduling Method: Shortest Job First – %s\n", preemptive_choice ? "Preemptive" : "Non-Preemptive");
-  fprintf(output_file, "Scheduling Method: Shortest Job First – %s\n", preemptive_choice ? "Preemptive" : "Non-Preemptive");
-  printf("Process Waiting Times:\n");
-  fprintf(output_file, "Process Waiting Times:\n");
+    printf("Do you want to use preemptive SJF? (1 for Yes, 0 for No): ");
+    scanf("%d", &preemptive_choice);
 
-  
-  while (jobs_finished < num_jobs) {
-    int shortest_job = -1;
-    for (int j = 0; j < num_jobs; j++) {
-      if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
-        if (shortest_job == -1 || jobs[j].burst_time < jobs[shortest_job].burst_time) {
-          shortest_job = j;
+    printf("Scheduling Method: Shortest Job First – %s\n", preemptive_choice ? "Preemptive" : "Non-Preemptive");
+    fprintf(output_file, "Scheduling Method: Shortest Job First – %s\n", preemptive_choice ? "Preemptive" : "Non-Preemptive");
+    printf("Process Waiting Times:\n");
+    fprintf(output_file, "Process Waiting Times:\n");
+
+    while (jobs_finished < num_jobs) {
+        int shortest_job = -1;
+        for (int j = 0; j < num_jobs; j++) {
+            if (jobs[j].arrival_time <= current_time && jobs[j].burst_time > 0) {
+                if (shortest_job == -1 || jobs[j].burst_time < jobs[shortest_job].burst_time) {
+                    shortest_job = j;
+                }
+            }
         }
-      }
+
+        if (shortest_job == -1) {
+            break;
+        }
+
+        if (preemptive_choice) {
+           int original_arrival_time = jobs[shortest_job].arrival_time;
+           if(jobs[shortest_job].arrival_time <= 0 && current_time == 0){
+             if(jobs[shortest_job].burst_time < jobs[num_jobs].burst_time)
+              jobs[shortest_job].last_exit_time ++; 
+              
+              
+               }
+              
+            if (jobs[shortest_job].burst_time > 0) {
+                jobs[shortest_job].burst_time--;
+                current_time++; 
+                if (jobs[shortest_job].burst_time == 0) {
+                  
+                    printf("P%d: %d ms\n", shortest_job + 1, total_wait_time);
+                    fprintf(output_file, "P%d: %d ms\n", shortest_job + 1, total_wait_time);
+                    jobs_finished++;
+                   
+                    total_wait_time += fmin(current_time, jobs[shortest_job].last_exit_time) - jobs[shortest_job].arrival_time;
+                 if(jobs[shortest_job].last_exit_time < 0){
+                      total_wait_time += current_time - jobs[shortest_job].last_exit_time;
+                   }
+                    
+                }
+              
+            }
+            
+            
+        } else {
+            if (jobs[shortest_job].arrival_time != current_time) {
+                total_wait_time += current_time - jobs[shortest_job].arrival_time;
+            }
+             
+            current_time += jobs[shortest_job].burst_time;
+            jobs[shortest_job].burst_time = 0;
+
+            // Update the last exit time to be the minimum of arrival time and actual last exit time
+            jobs[shortest_job].last_exit_time = fmin(current_time, jobs[shortest_job].last_exit_time);
+
+            printf("P%d: %d ms\n", shortest_job + 1, total_wait_time);
+            fprintf(output_file, "P%d: %d ms\n", shortest_job + 1, total_wait_time);
+            jobs_finished++;
+        }
     }
 
-    if (shortest_job == -1) {
-     break;
-    } 
-
-     
-    
-
-    
-     if (preemptive_choice) {
-      jobs[shortest_job].burst_time--;
-      current_time++;
-     
-     if (jobs[shortest_job].burst_time == 0) {
-        // If the job is completed, update turnaround time
-         total_wait_time += current_time - jobs[shortest_job].arrival_time;
-        printf("P%d: %d ms\n", shortest_job + 1, total_wait_time);
-        fprintf(output_file, "P%d: %d ms\n", shortest_job + 1, total_wait_time);
-      jobs_finished++;
-      }
-    
-    } else {
-      total_wait_time += current_time - jobs[shortest_job].arrival_time;
-      current_time += jobs[shortest_job].burst_time;
-      jobs[shortest_job].burst_time = 0;
-      printf("P%d: %d ms\n", shortest_job + 1, total_wait_time);
-    fprintf(output_file, "P%d: %d ms\n", shortest_job + 1, total_wait_time);
-    
-      jobs_finished++;
-    }
-     
-  }
     double average_wait_time = (double)total_wait_time / num_jobs;
     printf("Average Waiting Time: %f ms\n", average_wait_time);
     fprintf(output_file, "Average Waiting Time: %f ms\n", average_wait_time);
 }
 
 void priority(Job jobs[], int num_jobs, FILE *output_file) {
-  int current_time = 0;
-  int wait_time = 0;
-  int preemptive_choice;
+    int current_time = 0;
+    int total_wait_time = 0;
+    int jobs_finished = 0;
 
-  printf("Do you want to use preemptive Priority? (1 for Yes, 0 for No): ");
-  scanf("%d", &preemptive_choice);
+    printf("Do you want to use preemptive Priority? (1 for Yes, 0 for No): ");
+    int preemptive_choice;
+    scanf("%d", &preemptive_choice);
 
-  printf("Scheduling Method: Priority – %s\n", preemptive_choice ? "Preemptive" : "Non-Preemptive");
-  fprintf(output_file, "Scheduling Method: Priority – %s\n", preemptive_choice ? "Preemptive" : "Non-Preemptive");
-  printf("Process Waiting Times:\n");
-  fprintf(output_file, "Process Waiting Times:\n");
+    printf("Scheduling Method: Priority – %s\n", preemptive_choice ? "Preemptive" : "Non-Preemptive");
+    printf("Process Waiting Times:\n");
 
-  while (1) {
-    int highest_priority_job = -1;
-    for (int j = 0; j < num_jobs; j++) {
-      if (jobs[j].burst_time > 0 && jobs[j].arrival_time <= current_time) {
-        if (highest_priority_job == -1 ||
-            jobs[j].priority < jobs[highest_priority_job].priority ||
-            (jobs[j].priority == jobs[highest_priority_job].priority && jobs[j].arrival_time < jobs[highest_priority_job].arrival_time)) {
-          highest_priority_job = j;
+    while (jobs_finished < num_jobs) {
+        int highest_priority_job = -1;
+
+        for (int j = 0; j < num_jobs; j++) {
+            if (jobs[j].burst_time > 0 && jobs[j].arrival_time <= current_time) {
+                if (highest_priority_job == -1 ||
+                    jobs[j].priority < jobs[highest_priority_job].priority) {
+                    highest_priority_job = j;
+                }
+            }
         }
-      }
-    }
 
-    if (highest_priority_job == -1) {
-      break;
-    }
+        if (highest_priority_job == -1) {
+            current_time++;
+            continue;
+        }
 
-    
-      int original_arrival_time = jobs[highest_priority_job].arrival_time;
-    if (preemptive_choice) {
-   
-      current_time++;
-      jobs[highest_priority_job].burst_time--;
-      
-      if (jobs[highest_priority_job].burst_time <= 0) {
-        // If the job is completed, update turnaround time
-       wait_time += current_time - original_arrival_time;
-       printf("P%d: %d ms\n", highest_priority_job + 1, wait_time);
-       fprintf(output_file, "P%d: %d ms\n", highest_priority_job + 1, wait_time);
-      }
-      
-    }else {
-       wait_time += current_time - jobs[highest_priority_job].arrival_time;
-      current_time += jobs[highest_priority_job].burst_time;
-      jobs[highest_priority_job].burst_time = 0;
-    printf("P%d: %d ms\n", highest_priority_job + 1, wait_time);
-    fprintf(output_file, "P%d: %d ms\n", highest_priority_job + 1, wait_time);
-   
-    }
-    int all_jobs_completed = 1;
-    for (int j = 0; j < num_jobs; j++) {
-      if (jobs[j].burst_time > 0) {
-        all_jobs_completed = 0;
-        break;
-      }
-    }
+       
 
-    if (all_jobs_completed) {
-      break;
-    }
-  }
+        if (preemptive_choice) {
+           int original_arrival_time = jobs[highest_priority_job].arrival_time;
+            current_time++;
+            jobs[highest_priority_job].burst_time--;
+
+            if (jobs[highest_priority_job].burst_time <= 0) {
+                printf("P%d: %d ms\n", highest_priority_job + 1, total_wait_time);
+                fprintf(output_file, "P%d: %d ms\n", highest_priority_job + 1, total_wait_time);
+                jobs_finished++;
+                total_wait_time += current_time - original_arrival_time;
+
   
-  double average_wait_time = (double)wait_time / num_jobs;
-  printf("Average wait time: %f ms\n", average_wait_time);
-  fprintf(output_file, "Average wait time: %f ms\n", average_wait_time);
-}
+            }
+        } else {
+            total_wait_time += current_time - jobs[highest_priority_job].arrival_time;
+            current_time += jobs[highest_priority_job].burst_time;
+            jobs[highest_priority_job].burst_time = 0;
+            printf("P%d: %d ms\n", highest_priority_job + 1, total_wait_time);
+            fprintf(output_file, "P%d: %d ms\n", highest_priority_job + 1, total_wait_time);
+            jobs_finished++;
+        }
+    }
 
-void round_robin(Job jobs[], int num_jobs, int time_slice, FILE *output_file) {
+    double average_wait_time = (double)total_wait_time / num_jobs;
+    printf("Average wait time: %f ms\n", average_wait_time);
+    fprintf(output_file, "Average wait time: %f ms\n", average_wait_time);
+}
+void round_robin(Job jobs[], int num_jobs, int time_quantum, FILE *output_file) {
     int current_time = 0;
     int last_entry_time[num_jobs];
     int total_wait_time[num_jobs];
     for (int i = 0; i < num_jobs; i++) {
-        last_entry_time[i] = -1; // Initialize last entry time to -1 for each process
-        total_wait_time[i] = 0; // Initialize total wait time to 0 for each process
+        last_entry_time[i] = -1; 
+        total_wait_time[i] = 0;
     }
 
-    printf("Scheduling Method: Round Robin Scheduling – time_quantum=%d\n", time_slice);
-    fprintf(output_file, "Scheduling Method: Round Robin Scheduling – time_quantum=%d\n", time_slice);
+    printf("Scheduling Method: Round Robin Scheduling – time_quantum=%d\n", time_quantum);
+    fprintf(output_file, "Scheduling Method: Round Robin Scheduling – time_quantum=%d\n", time_quantum);
     printf("Process Waiting Times:\n");
     fprintf(output_file, "Process Waiting Times:\n");
 
@@ -208,7 +215,7 @@ void round_robin(Job jobs[], int num_jobs, int time_slice, FILE *output_file) {
                 int original_arrival_time = jobs[j].arrival_time;
                 int start_time = current_time;
 
-                if (jobs[j].burst_time <= time_slice) {
+                if (jobs[j].burst_time <= time_quantum) {
                     if (last_entry_time[j] == -1) {
                         total_wait_time[j] += current_time - original_arrival_time;
                     } else {
@@ -225,8 +232,8 @@ void round_robin(Job jobs[], int num_jobs, int time_slice, FILE *output_file) {
                         total_wait_time[j] += current_time - last_entry_time[j];
                     }
 
-                    current_time += time_slice;
-                    jobs[j].burst_time -= time_slice;
+                    current_time += time_quantum;
+                    jobs[j].burst_time -= time_quantum;
                 }
 
                 last_entry_time[j] = current_time;
