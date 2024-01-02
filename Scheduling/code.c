@@ -90,10 +90,9 @@ void sjf(Job jobs[], int num_jobs, FILE *output_file) {
            if(jobs[shortest_job].arrival_time <= 0 && current_time == 0){
              if(jobs[shortest_job].burst_time < jobs[num_jobs].burst_time)
               jobs[shortest_job].last_exit_time ++; 
-              
-              
+               
                }
-              
+             
             if (jobs[shortest_job].burst_time > 0) {
                 jobs[shortest_job].burst_time--;
                 current_time++; 
@@ -104,6 +103,7 @@ void sjf(Job jobs[], int num_jobs, FILE *output_file) {
                     jobs_finished++;
                    
                     total_wait_time += fmin(current_time, jobs[shortest_job].last_exit_time) - jobs[shortest_job].arrival_time;
+                  for(int i = 0; i<num_jobs; i++){
                  if(jobs[shortest_job].last_exit_time < 0){
                       total_wait_time += current_time - jobs[shortest_job].last_exit_time;
                    }
@@ -111,21 +111,18 @@ void sjf(Job jobs[], int num_jobs, FILE *output_file) {
                 }
               
             }
-            
+              }
             
         } else {
+                 
             if (jobs[shortest_job].arrival_time != current_time) {
                 total_wait_time += current_time - jobs[shortest_job].arrival_time;
             }
-             
-            current_time += jobs[shortest_job].burst_time;
-            jobs[shortest_job].burst_time = 0;
-
-            // Update the last exit time to be the minimum of arrival time and actual last exit time
-            jobs[shortest_job].last_exit_time = fmin(current_time, jobs[shortest_job].last_exit_time);
 
             printf("P%d: %d ms\n", shortest_job + 1, total_wait_time);
             fprintf(output_file, "P%d: %d ms\n", shortest_job + 1, total_wait_time);
+            current_time += jobs[shortest_job].burst_time;
+            jobs[shortest_job].burst_time = 0;
             jobs_finished++;
         }
     }
@@ -168,23 +165,36 @@ void priority(Job jobs[], int num_jobs, FILE *output_file) {
 
         if (preemptive_choice) {
            int original_arrival_time = jobs[highest_priority_job].arrival_time;
-            current_time++;
+
+            if(jobs[highest_priority_job].arrival_time <= 0 && current_time == 0){
+             if(jobs[highest_priority_job].burst_time < jobs[num_jobs].burst_time)
+              jobs[highest_priority_job].last_exit_time ++; 
+                total_wait_time += fmin(current_time, jobs[highest_priority_job].last_exit_time) - jobs[highest_priority_job].arrival_time;
+               }
+            if (jobs[highest_priority_job].burst_time > 0) {
+           
             jobs[highest_priority_job].burst_time--;
 
             if (jobs[highest_priority_job].burst_time <= 0) {
                 printf("P%d: %d ms\n", highest_priority_job + 1, total_wait_time);
                 fprintf(output_file, "P%d: %d ms\n", highest_priority_job + 1, total_wait_time);
                 jobs_finished++;
-                total_wait_time += current_time - original_arrival_time;
-
-  
-            }
-        } else {
-            total_wait_time += current_time - jobs[highest_priority_job].arrival_time;
+              
+               total_wait_time += fmin(current_time, jobs[highest_priority_job].last_exit_time) - jobs[highest_priority_job].arrival_time;
+                 if(jobs[highest_priority_job].last_exit_time < 0){
+                      total_wait_time += current_time - jobs[highest_priority_job].last_exit_time;
+                   }
+            } 
+             current_time++; 
+                 }
+            } else {
+           int wait_time_for_process = current_time - jobs[highest_priority_job].arrival_time;
+            total_wait_time += wait_time_for_process;
+            printf("P%d: %d ms\n", highest_priority_job + 1, wait_time_for_process);
+            fprintf(output_file, "P%d: %d ms\n", highest_priority_job + 1, wait_time_for_process);
+            
             current_time += jobs[highest_priority_job].burst_time;
             jobs[highest_priority_job].burst_time = 0;
-            printf("P%d: %d ms\n", highest_priority_job + 1, total_wait_time);
-            fprintf(output_file, "P%d: %d ms\n", highest_priority_job + 1, total_wait_time);
             jobs_finished++;
         }
     }
