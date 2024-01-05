@@ -84,11 +84,10 @@ void sjf(Job jobs[], int num_jobs, FILE *output_file) {
 
         if (preemptive_choice) {
            int original_arrival_time = jobs[shortest_job].arrival_time;
-           if(jobs[shortest_job].arrival_time <= 0 && current_time == 0){
-             if(jobs[shortest_job].burst_time < jobs[num_jobs].burst_time)
+           if(current_time == 0){
               jobs[shortest_job].last_exit_time ++; 
-               
-               }
+                total_wait_time += fmin(current_time, jobs[shortest_job].last_exit_time) - jobs[shortest_job].arrival_time;
+                }
              
             if (jobs[shortest_job].burst_time > 0) {
                 jobs[shortest_job].burst_time--;
@@ -100,14 +99,9 @@ void sjf(Job jobs[], int num_jobs, FILE *output_file) {
                     jobs_finished++;
                    
                     total_wait_time += fmin(current_time, jobs[shortest_job].last_exit_time) - jobs[shortest_job].arrival_time;
-                  for(int i = 0; i<num_jobs; i++){
-                 if(jobs[shortest_job].last_exit_time < 0){
-                      total_wait_time += current_time - jobs[shortest_job].last_exit_time;
-                   }
-                    
-                }
+        
               
-            }
+            } 
               }
             
         } else {
@@ -130,7 +124,7 @@ void sjf(Job jobs[], int num_jobs, FILE *output_file) {
 void priority(Job jobs[], int num_jobs, FILE *output_file) {
     int current_time = 0;
     int total_wait_time = 0;
-    int jobs_finished = 0;
+    int jobs_finished;
 
     printf("Do you want to use preemptive Priority? (1 for Yes, 0 for No): ");
     int preemptive_choice;
@@ -164,7 +158,6 @@ void priority(Job jobs[], int num_jobs, FILE *output_file) {
             if(jobs[highest_priority_job].arrival_time <= 0 && current_time == 0){
              if(jobs[highest_priority_job].burst_time < jobs[num_jobs].burst_time)
               jobs[highest_priority_job].last_exit_time ++; 
-                total_wait_time += fmin(current_time, jobs[highest_priority_job].last_exit_time) - jobs[highest_priority_job].arrival_time;
                }
             if (jobs[highest_priority_job].burst_time > 0) {
            
@@ -182,7 +175,7 @@ void priority(Job jobs[], int num_jobs, FILE *output_file) {
                    }
             } 
              current_time++; 
-                 }
+            }
             } else {
            int wait_time_for_process = current_time - jobs[highest_priority_job].arrival_time;
             total_wait_time += wait_time_for_process;
