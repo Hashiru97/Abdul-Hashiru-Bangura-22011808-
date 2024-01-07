@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
-#define MAX_JOBS 100000000000000000
+#define MAX_JOBS 1000
 
 typedef struct {
   int arrival_time;
