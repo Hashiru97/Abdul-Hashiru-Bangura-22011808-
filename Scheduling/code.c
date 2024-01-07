@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
-#define MAX_JOBS 100
+#define MAX_JOBS 1000
 
 typedef struct {
   int arrival_time;
@@ -261,8 +261,8 @@ void round_robin(Job jobs[], int num_jobs, int time_quantum, FILE *output_file) 
 
 int main(int argc, char **argv) {
   int opt;
-  char *input_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\School work\\Projects\\project OS\\Scheduling\\input.txt";
-  char *output_file_name = "C:\\Users\\abdul\\OneDrive\\Desktop\\School work\\Projects\\project OS\\Scheduling\\output.txt";
+  char *input_file_name = "input.txt";
+  char *output_file_name = "output.txt";
   int algorithm_choice;
   int scheduling_method = 0;  // 0: None, 1: FCFS, 2: SJF, 3: Priority, 4: Round Robin
   int preemptive_choice = 0; // 0: Off, 1: On
